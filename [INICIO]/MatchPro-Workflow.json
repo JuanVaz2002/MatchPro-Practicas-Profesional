@@ -1,0 +1,492 @@
+{
+  "name": "MatchPro-Workflow copy",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "id": "c8d33d40-970a-419e-9e7c-84910d6a176e",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -928,
+        1248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "id": "556f01e0-8691-4bff-88ad-8186b3bd701a",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        -96,
+        2096
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -656,
+        1408
+      ],
+      "id": "b4719f4c-0737-4792-b1f8-55bfdeb1206c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items[0].json.output;\n\n// Limpiar los ```json y los saltos de línea, luego hacer parse\nconst cleanJsonStr = raw.replace(/```json|```/g, '').trim();\n\nconst parsed = JSON.parse(cleanJsonStr);\n\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1360
+      ],
+      "id": "adc84ca9-1b31-459d-8bbd-3447e284ea84",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dc2da8f7-8255-49ca-9feb-64d6a0a33bef",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        1424
+      ],
+      "id": "d4b90c9f-fbaf-432a-adac-5f01d5f034a5",
+      "name": "Webhook",
+      "webhookId": "dc2da8f7-8255-49ca-9feb-64d6a0a33bef"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        1376
+      ],
+      "id": "4c252392-9284-4b9e-af95-7fe8c787c21c",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1520,
+        1376
+      ],
+      "id": "4fd1179c-ab52-47a1-82f5-18077c329f58",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/CV - {{ $json.name}} ({{ $json.num }}).pdf",
+        "binaryData": true,
+        "binaryPropertyName": "file"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1472
+      ],
+      "id": "3dd3d0db-4a9a-4269-9654-d4c3ef7f4465",
+      "name": "Upload a file",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the parsed AI analysis results from the workflow\n// Adjust the index or data source if needed\nconst analysis = items[0].json;\n\n// Build the response object\nreturn [\n  {\n    json: {\n      score: analysis.score || 0,\n      strengths: analysis.strengths || [],\n      improvements: analysis.improvements || [],\n      keywords: analysis.keywords || [],\n      missingKeywords: analysis.missingKeywords || [],\n      concerns: analysis.concerns || [],\n      recommendation: analysis.recommendation || \"\",\n      url: analysis.url || \"\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1376
+      ],
+      "id": "2cb74675-9c86-4934-85f8-fb2567322e5e",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dropbox.com/oauth2/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "refresh_token"
+            },
+            {
+              "name": "refresh_token",
+              "value": "ESCRIBA REFRESH TOKEN AQUI"
+            },
+            {
+              "name": "client_id",
+              "value": "ESCRIBA CLIENT ID AQUI"
+            },
+            {
+              "name": "client_secret",
+              "value": "ESCRIBA CLIENT SECRET AQUI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        1472
+      ],
+      "id": "e141ffe1-b9bf-4ef1-ad18-40486630ed30",
+      "name": "Dropbox HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"path\": \"/CV - {{ $json.name }} ({{ $json.num }}).pdf\",\n \"settings\": {\n \"access\": \"viewer\",\n \"allow_download\": true,\n \"audience\": \"public\",\n \"requested_visibility\": \"public\"\n }\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        1488
+      ],
+      "id": "b16f3b7e-7a91-4082-9c7d-8833843ce410",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }} {{ $json.professionalTitle }} {{ $json.experience }} {{ $json.jobPreferences.salary.min }} {{ $json.jobPreferences.salary.max }} {{ $json.jobPreferences.location }} {{ $json.jobPreferences.jobType }} {{ $json.recruitmentSource }}",
+        "options": {
+          "systemMessage": "=CV: {{ $json.text }} \nRecruitment Source: {{ $json.recruitmentSource }}\nYou are an AI assistant that analyzes CVs and returns structured data for the candidate. Your task is to evaluate the quality of the candidate's CV based on the content and formatting, considering the candidate's professional title, {{ $json.professionalTitle }}.\nUse the following JSON format for your response:\n{\n  \"num\": [Generate the number between 0 and 999999]\n  \"score\": [a number between 0 and 100 indicating the overall quality and suitability for the {{ $json.professionalTitle }} role],\n  \"strengths\": [a list of strengths from the CV, such as relevant experience, certifications, or skills],\n  \"concerns\": [A list of concerns about the candidate's profile, such as gaps in experience or a lack of certain skills],\n  \"recommendation\": \"A sentence of recommendation for the candidate, considering their professionalTitle, score, and their information (skills, experience, and education).\",\n  \"improvements\": [a list of suggested improvements, such as adding missing keywords or reformatting sections],\n  \"keywords\": [important keywords relevant to the professional title found in the CV],\n  \"missingKeywords\": [important keywords expected for the professional title that are missing from the CV]\n}\n\nContext:\n- The input provided is the raw extracted text from a CV.\n- The candidate’s professional title is {{ $json.professionalTitle }}. Use this to determine which keywords should ideally appear.\n- Score breakdown: 40% content relevance, 30% formatting/structure, 30% keyword presence.\n- The candidate's name is from the CV.\n- The candidate's total experience is {{ $json.experience }} years.\n- The candidate's job preferences include a salary range of ${{ $json.jobPreferences.salary.min }} to ${{ $json.jobPreferences.salary.max }}, preferred locations: {{ $json.jobPreferences.location }}, and job type: {{ $json.jobPreferences.jobType }}.\n- Specific work experience, skills, Certification, and Education details can be found in the CV ({{ $json.text }})."
+        }
+      },
+      "id": "7ba16a38-22b2-4e8f-a9c8-689f66ae7d8c",
+      "name": "CV Analysis Candidate",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -336,
+        1360
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const candidateRaw = $input.first().json.body.candidateData;\n\nlet candidate;\ntry {\n  candidate = JSON.parse(candidateRaw);\n} catch (e) {\n  candidate = candidateRaw; // fallback in case it’s already parsed\n}\n\nreturn [{ json: candidate }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        1616
+      ],
+      "id": "957dff85-a891-42cd-83e2-7b7bc5cefe9d",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {
+          "keepSource": "binary"
+        }
+      },
+      "id": "e27e4ea1-44be-4931-a249-c3696fcec593",
+      "name": "Extract from File3",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -928,
+        1760
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        128,
+        1552
+      ],
+      "id": "f92d7d50-608f-4d10-9ba2-6df5dc1d7e9e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        1488
+      ],
+      "id": "e07dad45-b43f-441d-a45a-eb2b7da8e46b",
+      "name": "Merge3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CV Analysis Candidate",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "CV Analysis Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Dropbox HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dropbox HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CV Analysis Candidate": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ed272a6a-23c1-4710-ac4e-d4a5e15e8563",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f7ebab91ed6bd3986d3ceb74b98b9b3ce0fc89ca7d29d15ecf7ef5b3eb6538c"
+  },
+  "id": "M6wp1QcLiYifEnN9",
+  "tags": []
+}
