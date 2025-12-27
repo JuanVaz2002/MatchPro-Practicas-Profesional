@@ -87,7 +87,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
    - Importar el archivo SQL (ejemplo desde PowerShell):
 
      ```powershell
-     mysql -u root -p matchprodb < "C:\Users\hacki\Documents\MatchPro\Iniciar esto\MatchPro-Datos.sql"
+     mysql -u root -p matchprodb < ".\[INICIO]\MatchPro-Datos.sql"
      ```
 
    - Alternativa usando `source` dentro del cliente `mysql`:
@@ -95,7 +95,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
      ```powershell
      mysql -u root -p
      USE matchprodb;
-     SOURCE C:/Users/hacki/Documents/MatchPro/Iniciar esto/MatchPro-Datos.sql;
+     SOURCE ./[INICIO]/MatchPro-Datos.sql;
      ```
 
 2. Configurar variables de entorno del proyecto
