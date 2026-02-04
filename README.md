@@ -118,7 +118,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 ---
 
 ## 🤖 Instrucción de n8n:
-1. Importe un workflow de "Iniciar esto/MatchPro-Workflow.json" a n8n
+1. Importe un workflow de "\[INICIO\]/MatchPro-Workflow.json" a n8n
 2. Configure un credencial de Dropbox (Método recomendado: OAuth2 manual con Refresh Token)
 
    a. Cree una app en Dropbox
@@ -158,7 +158,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 ---
 
 ## Instrucción de MySQL:
-1. Importe los datos del archivo SQL de `Iniciar esto/MatchPro-Datos.sql` a MySQL.
+1. Importe los datos del archivo SQL de `[INICIO]/MatchPro-Datos.sql` a MySQL.
 
    Pasos recomendados (Windows / PowerShell):
 
@@ -174,7 +174,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
    - Importar el archivo SQL (ejemplo desde PowerShell):
 
      ```powershell
-     mysql -u root -p matchprodb < "C:\Users\hacki\Documents\MatchPro\Iniciar esto\MatchPro-Datos.sql"
+     mysql -u root -p matchprodb < ".\[INICIO]\MatchPro-Datos.sql"
      ```
 
    - Alternativa usando `source` dentro del cliente `mysql`:
@@ -182,12 +182,12 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
      ```powershell
      mysql -u root -p
      USE matchprodb;
-     SOURCE C:/Users/hacki/Documents/MatchPro/Iniciar esto/MatchPro-Datos.sql;
+     SOURCE ./[INICIO]/MatchPro-Datos.sql;
      ```
 
 2. Configurar variables de entorno del proyecto
 
-   - Ajuste el archivo `.env.local` con los valores correctos (ya existe un ejemplo en el proyecto):
+   - Cree y ajuste el archivo `.env.local` con los valores correctos (ya existe un ejemplo en el proyecto):
 
      - `DB_HOST=localhost`
      - `DB_USER=matchpro`  (o `root` si prefiere)
