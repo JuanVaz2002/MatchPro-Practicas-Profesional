@@ -22,9 +22,8 @@ import FillCandidateInfo from "./components/Pages/Candidate/FillCandidateInfo"
 import CandidateDashboard from "./components/Pages/Candidate/CandidateDashboard"
 import CVUpload from "./components/AI_tools/CVUpload"
 import JobSearch from "./components/Pages/Candidate/JobSearch"
-import InterviewPrepChat from "./components/AI_tools/InterviewPrepChat"
 
-import { Candidate } from "./types"
+import { Candidate, Recruiter } from "./types"
 
 import Settings from "./components/Settings"
 
@@ -75,41 +74,42 @@ function AppContent() {
         return <FillCandidateInfo candidate={user as Candidate}/>
       }
       else {
+        const candidate = user as Candidate
         switch (activeTab) {
           case "home":
-            return <CandidateDashboard candidateID={user.id}/>
+            return <CandidateDashboard candidateID={candidate.id}/>
           case "upload-cv":
-            return <CVUpload candidate={user} />
+            return <CVUpload candidate={candidate} />
+            
           case "job-search":
-            return <JobSearch setActiveTab={setActiveTab} user={user} />
-          case "interview-prep":
-            return <InterviewPrepChat />
+            return <JobSearch setActiveTab={setActiveTab} user={candidate} />
           default:
-            return <CandidateDashboard candidateID={user.id}/>
+            return <CandidateDashboard candidateID={candidate.id}/>
         }
       }
 
     }  else if (user.role === "recruiter") {
+      const recruiter = user as Recruiter
       switch (activeTab) {
         case "home":
-          return <RecruiterDashboard recruiterID={user.id}/>
+          return <RecruiterDashboard recruiterID={recruiter.id}/>
         case 'clients':
           return <ClientsManagement />;
         case 'post-job':
-          return <PostJob userID={user.id}/>;
+          return <PostJob userID={recruiter.id}/>;
         case 'open-positions':
-          return <ManageJobs userID={user.id}/>;
+          return <ManageJobs userID={recruiter.id}/>;
         case 'candidates':
-          return <CandidatesDatabase userID={user.id} />;
+          return <CandidatesDatabase userID={recruiter.id} />;
         case 'referred':
-          return <ReferredCandidates recruiterID={user.id} />;
+          return <ReferredCandidates recruiterID={recruiter.id} />;
         case 'report':
           return <ReportsAnalytics />;
         case 'linkedin-searh':
           return <LinkedInSearch />;
         
         default:
-          return <RecruiterDashboard recruiterID={user.id}/>
+          return <RecruiterDashboard recruiterID={recruiter.id}/>
       }
     }
   }

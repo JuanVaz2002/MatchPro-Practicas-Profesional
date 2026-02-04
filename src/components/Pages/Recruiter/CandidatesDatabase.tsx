@@ -49,7 +49,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
   
  
 
-  const getAvailability = (availability: string) => {
+  const getAvailability = (availability?: string) => {
     switch (availability) {
       case 'available':
         return 'Available';
@@ -62,7 +62,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
     }
   };
 
-  const getAvailabilityColor = (availability: string) => {
+  const getAvailabilityColor = (availability?: string) => {
     switch (availability) {
       case 'available':
         return 'bg-green-100 text-green-800';
@@ -77,10 +77,11 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
 
 
 
-  const getMatchScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600 bg-green-100';
-    if (score >= 80) return 'text-blue-600 bg-blue-100';
-    if (score >= 70) return 'text-yellow-600 bg-yellow-100';
+  const getMatchScoreColor = (score?: number) => {
+    const s = score ?? 0;
+    if (s >= 90) return 'text-green-600 bg-green-100';
+    if (s >= 80) return 'text-blue-600 bg-blue-100';
+    if (s >= 70) return 'text-yellow-600 bg-yellow-100';
     return 'text-red-600 bg-red-100';
   };
 
@@ -97,7 +98,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
     const matchesSkill = !skillFilter || candidate.skills?.some(skill => 
       skill.toLowerCase().includes(skillFilter.toLowerCase())) || false;
     const matchesLocation = !locationFilter || candidateLocation.toLowerCase().includes(locationFilter.toLowerCase());
-    const matchesExperience = !experienceFilter || 
+    const matchesExperience = !experienceFilter || !candidate.experience || 
       (experienceFilter === 'junior' && candidate.experience <= 3) ||
       (experienceFilter === 'mid' && candidate.experience >= 3 && candidate.experience <= 6) ||
       (experienceFilter === 'senior' && candidate.experience > 6);
@@ -204,7 +205,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
 
   if (selectedCandidate) {
 
-    const uniqueEducation = selectedCandidate.education.filter(
+    const uniqueEducation = (selectedCandidate.education || []).filter(
       (edu: any, index: number, self: any[]) =>
         index === self.findIndex(e =>
           e.degree === edu.degree &&
@@ -216,7 +217,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
 
     console.log(selectedCandidate.workExperience);
 
-    const uniqueWorkExperience = selectedCandidate.workExperience.filter(
+    const uniqueWorkExperience = (selectedCandidate.workExperience || []).filter(
       (wor: any, index: number, self: any[]) =>
         index === self.findIndex(w =>
           w.title === wor.title &&
@@ -268,7 +269,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
                     <div className="flex items-center justify-center mt-2">
                       <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${getMatchScoreColor(selectedCandidate.matchScore)}`}>
                         <Star className="w-4 h-4 inline mr-1" />
-                        {selectedCandidate.matchScore}% match
+                        {(selectedCandidate.matchScore ?? 0)}% match
                       </span>
                     </div>
                   </div>
@@ -301,7 +302,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h3 className="font-semibold text-gray-900 mb-3">Skills</h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedCandidate.skills.map((skill: string, index: number) => (
+                      {(selectedCandidate.skills || []).map((skill: string, index: number) => (
                         <span key={index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
                           {skill}
                         </span>
@@ -312,7 +313,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h3 className="font-semibold text-gray-900 mb-2">Education</h3>
                     <div className="space-y-2">
-                    {uniqueEducation.map((edu: any, index: number) => (
+                      {uniqueEducation.map((edu: any, index: number) => (
                       <div key={index} className="text-sm text-gray-600">
                         <div className="font-medium text-gray-800">{edu.degree}</div>
                         <div>{edu.school} — {edu.year} • GPA: {edu.gpa}</div>
@@ -324,7 +325,7 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h3 className="font-semibold text-gray-900 mb-2">Salary Expectation</h3>
                     <p className="text-sm text-gray-600">
-                      ${selectedCandidate.jobPreferences.salary.min.toLocaleString()} - ${selectedCandidate.jobPreferences.salary.max.toLocaleString()}
+                      ${((selectedCandidate.jobPreferences?.salary?.min) ?? 0).toLocaleString()} - ${((selectedCandidate.jobPreferences?.salary?.max) ?? 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -391,308 +392,319 @@ export default function CandidatesDatabase({ userID: recruiterID } : CandidatesD
     }
   }
 
-  return (
-    <div className="flex-1 p-8 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Users className="w-8 h-8 text-blue-600 mr-3" />
-                Candidates Database
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Search and manage your candidate pool
-              </p>
-            </div>
-            <button 
-              onClick={() => setShowAddCandidate(true)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add Candidate
-            </button>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+  if (candidates) {
+    return (
+      <div className="flex-1 p-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Candidates</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{candidates.length}</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Available</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {candidates.filter(c => c.availability === 'Available').length}
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  <Users className="w-8 h-8 text-blue-600 mr-3" />
+                  Candidates Database
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  Search and manage your candidate pool
                 </p>
               </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
+              <button 
+                onClick={() => setShowAddCandidate(true)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add Candidate
+              </button>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">High Match</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {candidates.filter(c => c.matchScore >= 90).length}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <Star className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">New This Week</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{newCandidates}</p>
-              </div>
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Candidates</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">{candidates.length}</p>
+                </div>
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Available</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                    {candidates.filter(c => c.availability === 'Available').length}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">High Match</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                    {candidates.filter(c => (c.matchScore ?? 0) >= 90).length}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <Star className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">New This Week</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">{newCandidates}</p>
+                </div>
+                <div className="p-3 bg-yellow-50 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-yellow-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search candidates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
               <input
                 type="text"
-                placeholder="Search candidates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Filter by skills"
+                value={skillFilter}
+                onChange={(e) => setSkillFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              <input
+                type="text"
+                placeholder="Filter by location"
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <select
+                value={experienceFilter}
+                onChange={(e) => setExperienceFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Experience</option>
+                <option value="junior">Junior (0-3 years)</option>
+                <option value="mid">Mid (3-6 years)</option>
+                <option value="senior">Senior (6+ years)</option>
+              </select>
             </div>
-            <input
-              type="text"
-              placeholder="Filter by skills"
-              value={skillFilter}
-              onChange={(e) => setSkillFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              placeholder="Filter by location"
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <select
-              value={experienceFilter}
-              onChange={(e) => setExperienceFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Experience</option>
-              <option value="junior">Junior (0-3 years)</option>
-              <option value="mid">Mid (3-6 years)</option>
-              <option value="senior">Senior (6+ years)</option>
-            </select>
           </div>
-        </div>
 
 
 
-         {/* Assign to Job */}
-         {assignCandidate && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add Candidate</h3>
-                <button
-                  onClick={() => {
-                    setAssignCandidate(null);
-                    setSelectedJobId('');
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-gray-600 text-sm mb-2">Adding:</p>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <img
-                      src={assignCandidate.avatar}
-                      alt={assignCandidate.name || assignCandidate.email}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  <div>
-                    <p className="font-medium text-gray-900">{assignCandidate.name || assignCandidate.email}</p>
-                    <p className="text-gray-600 text-sm">{assignCandidate.professionalTitle}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Job
-                  </label>
-                  <select 
-                    value={selectedJobId}
-                    onChange={(e) => setSelectedJobId(e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={jobs.length === 0}
-                  >
-                    <option value="">{jobs.length === 0 ? 'Loading jobs...' : 'Select a job opening'}</option>
-                    {jobs.length === 0 ? (
-                      <option value="" disabled>No jobs available</option>
-                    ) : (
-                      jobs.filter(job => !allApplications.some(app => job.id === app.jobId && app.candidateId === assignCandidate.id)).map((job) => (
-                        <option key={job.id} value={job.id}>
-                          {job.title} - {job.company}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={() => {
-                    if (selectedJobId && assignCandidate) {
-                      handleAssignCandidate(selectedJobId, assignCandidate.id);
+          {/* Assign to Job */}
+          {assignCandidate && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Add Candidate</h3>
+                  <button
+                    onClick={() => {
                       setAssignCandidate(null);
                       setSelectedJobId('');
-                    }
-                  }}
-                  disabled={!selectedJobId}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  Assign Candidate
-                </button>
-                <button
-                  onClick={() => {
-                    setAssignCandidate(null);
-                    setSelectedJobId('');
-                  }}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-
-
-
-
-        {/* Candidates List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Candidates ({filteredCandidates.length})
-            </h2>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {filteredCandidates.map((candidate) => (
-              <div key={candidate.id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-4">
-                    <img
-                      src={candidate.avatar}
-                      alt={candidate.name || candidate.email}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{candidate.name || candidate.email}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(candidate.availability)}`}>
-                          {getAvailability(candidate.availability)}
-                        </span>
-                        <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getMatchScoreColor(candidate.matchScore)}`}>
-                          {candidate.matchScore}% match
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-2">{candidate.professionalTitle} at {candidate.company}</p>
-                      <div className="flex items-center space-x-6 text-sm text-gray-500 mb-3">
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {candidate.location}
-                        </span>
-                        <span className="flex items-center">
-                          <Briefcase className="w-4 h-4 mr-1" />
-                          {candidate.experience} years
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          Last active {new Date(candidate.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {candidate.skills.slice(0, 5).map((skill, index) => (
-                          <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
-                            {skill}
-                          </span>
-                        ))}
-                        {candidate.skills.length > 5 && (
-                          <span className="bg-gray-50 text-gray-600 text-xs px-2 py-1 rounded">
-                            +{candidate.skills.length - 5}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Salary Expectation: ${candidate.jobPreferences.salary.min.toLocaleString()} - ${candidate.jobPreferences.salary.max.toLocaleString()}
-                      </p>
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="mb-4">
+                  <p className="text-gray-600 text-sm mb-2">Adding:</p>
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <img
+                        src={assignCandidate.avatar}
+                        alt={assignCandidate.name || assignCandidate.email}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    <div>
+                      <p className="font-medium text-gray-900">{assignCandidate.name || assignCandidate.email}</p>
+                      <p className="text-gray-600 text-sm">{assignCandidate.professionalTitle}</p>
                     </div>
                   </div>
-                  
-                  {/* Actions */}
-                  <div className="flex items-center space-x-2">
-                    
-                  <button
-                      onClick={() => {setAssignCandidate(candidate)}}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center"
-                    >
-                      <Briefcase className="w-4 h-4 mr-2" />
-                      Assign to Job
-                    </button>
-                    <button
-                      onClick={() => {setSelectedCandidate(candidate)}}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedCandidate(candidate);
-                        setSelectedCandidateEdit(candidate);
-                      }}
-                      className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium flex items-center"
-                    >
-                      <Wrench className="w-4 h-4 mr-2" />
-                      Edit
-                    </button>
+                </div>
 
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job
+                    </label>
+                    <select 
+                      value={selectedJobId}
+                      onChange={(e) => setSelectedJobId(e.target.value ? Number(e.target.value) : '')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={jobs.length === 0}
+                    >
+                      <option value="">{jobs.length === 0 ? 'Loading jobs...' : 'Select a job opening'}</option>
+                      {jobs.length === 0 ? (
+                        <option value="" disabled>No jobs available</option>
+                      ) : (
+                        jobs.filter(job => !allApplications.some(app => job.id === app.jobId && app.candidateId === assignCandidate.id)).map((job) => (
+                          <option key={job.id} value={job.id}>
+                            {job.title} - {job.company}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
                 </div>
+
+                <div className="flex space-x-3 mt-6">
+                  <button
+                    onClick={() => {
+                      if (selectedJobId && assignCandidate) {
+                        handleAssignCandidate(selectedJobId, assignCandidate.id);
+                        setAssignCandidate(null);
+                        setSelectedJobId('');
+                      }
+                    }}
+                    disabled={!selectedJobId}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Assign Candidate
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAssignCandidate(null);
+                      setSelectedJobId('');
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            ))}
+            </div>
+          )}
+
+
+
+
+
+          {/* Candidates List */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Candidates ({filteredCandidates.length})
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {filteredCandidates.map((candidate) => (
+                <div key={candidate.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-4">
+                      <img
+                        src={candidate.avatar}
+                        alt={candidate.name || candidate.email}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{candidate.name || candidate.email}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(candidate.availability)}`}>
+                            {getAvailability(candidate.availability)}
+                          </span>
+                          <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getMatchScoreColor(candidate.matchScore)}`}>
+                              {(candidate.matchScore ?? 0)}% match
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm mb-2">{candidate.professionalTitle} at {candidate.company}</p>
+                        <div className="flex items-center space-x-6 text-sm text-gray-500 mb-3">
+                          <span className="flex items-center">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {candidate.location}
+                          </span>
+                          <span className="flex items-center">
+                            <Briefcase className="w-4 h-4 mr-1" />
+                            {candidate.experience} years
+                          </span>
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            Last active {new Date(candidate.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {(candidate.skills || []).slice(0, 5).map((skill, index) => (
+                            <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+                              {skill}
+                            </span>
+                          ))}
+                          {((candidate.skills || []).length > 5) && (
+                            <span className="bg-gray-50 text-gray-600 text-xs px-2 py-1 rounded">
+                              +{(candidate.skills || []).length - 5}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Salary Expectation: ${((candidate.jobPreferences?.salary?.min) ?? 0).toLocaleString()} - ${((candidate.jobPreferences?.salary?.max) ?? 0).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex items-center space-x-2">
+                      
+                    <button
+                        onClick={() => {setAssignCandidate(candidate)}}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center"
+                      >
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Assign to Job
+                      </button>
+                      <button
+                        onClick={() => {setSelectedCandidate(candidate)}}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedCandidate(candidate);
+                          setSelectedCandidateEdit(candidate);
+                        }}
+                        className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium flex items-center"
+                      >
+                        <Wrench className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } 
+  else {
+    return (
+      <div className="flex-1 p-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-gray-600">Loading candidates...</p>
+        </div>
+      </div>
+    );
+  }
 }

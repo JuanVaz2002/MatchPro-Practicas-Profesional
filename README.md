@@ -7,8 +7,91 @@
 
 ---
 
-### 📂 Repository Structure
-- TODO
+### 📂 Estructura del Repositorio
+
+A continuación se muestra la estructura principal basada en la carpeta `src` del proyecto:
+
+```
+src/
+├─ App.tsx
+├─ index.css
+├─ vite-env.d.ts
+├─ components/
+│  ├─ Settings.tsx
+│  ├─ Settings_Backup.tsx
+│  ├─ AI_tools/
+│  │  ├─ CVUpload.tsx
+│  │  ├─ CVOverwrite.tsx
+│  │  └─ InterviewPrepChat_Backup.tsx
+│  ├─ Layout/
+│  │  └─ Sidebar.tsx
+│  └─ Pages/
+│     ├─ AuthContainer.tsx
+│     ├─ LoginForm.tsx
+│     ├─ RegistrationContainer.tsx
+│     ├─ RegistrationForm.tsx
+│     ├─ Candidate/
+│     │  ├─ CandidateDashboard.tsx
+│     │  ├─ CandidateProfileForm_Backup.tsx
+│     │  ├─ FillCandidateInfo.tsx
+│     │  ├─ JobApplicationForm.tsx
+│     │  ├─ JobDetails.tsx
+│     │  └─ JobSearch.tsx
+│     └─ Recruiter/
+│        ├─ AddCandidate.tsx
+│        ├─ CandidateRegistrationWizard.tsx
+│        ├─ CandidatesDatabase.tsx
+│        ├─ ClientsManagement.tsx
+│        ├─ EditCandidate.tsx
+│        ├─ EditJob.tsx
+│        ├─ EmployerProfileForm.tsx
+│        ├─ JobApplications.tsx
+│        ├─ LinkedInSearch.tsx
+│        ├─ ManageJobs.tsx
+│        ├─ PostJob.tsx
+│        ├─ RecruiterDashboard.tsx
+│        ├─ ReferCandidateWizard.tsx
+│        ├─ ReferredCandidates.tsx
+│        └─ ReportsAnalytics.tsx
+├─ contexts/
+│  ├─ AuthContext.tsx
+│  └─ AuthContext_Backup.tsx
+├─ database/
+│  ├─ index.ts
+│  └─ analytics-utils.ts
+├─ pages/
+│  └─ api/
+│     ├─ addCandidate.ts
+│     ├─ addView.ts
+│     ├─ aiAnalysisCandidate.ts
+│     ├─ aiAnalysisRecruiter.ts
+│     ├─ applications.ts
+│     ├─ candidate.ts
+│     ├─ candidateDatabase.ts
+│     ├─ client.ts
+│     ├─ companyInfo.ts
+│     ├─ deleteFromCandidateDatabase.ts
+│     ├─ hiredApplications.ts
+│     ├─ jobs.ts
+│     ├─ matchScore.ts
+│     ├─ recruiters.ts
+│     ├─ referral.ts
+│     ├─ rejectedApplications.ts
+│     ├─ reviewApplication.ts
+│     ├─ updateCandidateData.ts
+│     ├─ updateJobs.ts
+│     └─ updateRecruiterData.ts
+├─ server/
+│  └─ lib/
+│     └─ dt.ts
+└─ types/
+   └─ index.ts
+```
+
+**Notas:**
+- Los archivos con sufijo `_Backup` indican versiones previas o alternativas en el repositorio.
+- La presencia de un componente sugiere que la UI está disponible; la integración completa (API, validaciones) puede necesitar verificación adicional.
+
 ---
 
 ### Responsabilidades de MatchPro:
@@ -30,7 +113,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 2. Applicacion de Dropbox (con Refresh token, CLient ID, Client Token)
 3. MySQL
 4. Node.js
-5. API de Google Gemini
+5. LM Studio (servidor local de IA) o Google Gemini
 
 ---
 
@@ -62,12 +145,16 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
      - client_id: App Key
      - client_secret: App Secret
   
-4. Configue un credencial del nodo "Google Gemini Chat Model"
+4. Configuración de credencial del modelo para un agente de IA:
+  Opcion A: Configurir un credencial del nodo "OpenAI Chat Model" para LM Studio
+    - Host: http://localhost:1234/v1
+    - API Key: Escribirlo falso (LM Studio no requiere clave por defecto, pero verifica la configuración local)
+    - Model
+      - By ID: Escribir el nombre del modelo seleccionado (Recomendación: openai/gpt-oss-20b)
 
-   - Host: https://generativelanguage.googleapis.com
-   - API Key: 
-     - La clave de su proyecto en Google AI Studio: https://aistudio.google.com/app/apikey
-
+  Opcion B: Configuir un credencial del nodo "Google Gemini Chat Model"
+    - Host: https://generativelanguage.googleapis.com
+    - API Key: La clave de su proyecto en Google AI Studio: https://aistudio.google.com/app/apikey
 ---
 
 ## Instrucción de MySQL:
@@ -156,7 +243,7 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 | Workflow de análisis de CV | ✅ Listo |
 | Conexion desde MySQL a la plataforma | ✅ Listo |
 | Subir CV en PDF desde la plataforma a n8n | ✅ Listo |
-| Editar la información basica del usuario | ⏳ TODO |
+| Editar la información basica del usuario | ✅ Listo |
 | Iniciar sesión con un correo y una contraseña | ✅ Listo |
 
 ### Candidato
@@ -165,10 +252,10 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 |---|---|
 | Dashboard del candidato (`CandidateDashboard.tsx`) | ✅ Listo |
 | Editar perfil / formulario de perfil (`CandidateProfileForm.tsx`) | ✅ Listo |
-| Completar información del candidato / onboarding (`FillCandidateInfo.tsx`) | ✅ Listo |
+| Completar información del candidato / onboarding (`FillCandidateInfo.tsx`) | ⏳ En Progreso |
 | Formulario de postulación a vacantes (`JobApplicationForm.tsx`) | ✅ Listo |
 | Búsqueda de vacantes (`JobSearch.tsx`) | ✅ Listo |
-| Visualización de detalles de una vacante (`JobDetails.tsx`) | ✅ Listo |
+| Visualización de detalles de una vacante (`JobDetails.tsx`) | ⏳ En Progreso |
 
 
 ### Reclutador
@@ -180,11 +267,14 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
 | Ver aplicaciones a vacantes (`JobApplications.tsx`) | ✅ Listo |
 | Base de datos de candidatos (`CandidatesDatabase.tsx`) | ✅ Listo |
 | Agregar candidato manualmente (`AddCandidate.tsx`) | ✅ Listo |
-| Editar candidato (`EditCandidate.tsx`) | ✅ Listo |
-| Perfil del empleador / formulario (`EmployerProfileForm.tsx`) | ⏳ TODO |
-| Búsqueda en LinkedIn (`LinkedInSearch.tsx`) | ✅ Listo |
-| Gestión de clientes (`ClientsManagement.tsx`) | ✅ Listo |
-| Referir candidato / flujos de referencia (`ReferCandidateWizard.tsx`, `ReferredCandidates.tsx`) | ✅ Listo |
-| Reportes y analítica (`ReportsAnalytics.tsx`) | ✅ Listo |
+| Editar candidato (`EditCandidate.tsx`) | ⏳ En Progreso |
+| Perfil del empleador / formulario (`EmployerProfileForm.tsx`) | ➕ TODO |
+| Búsqueda en LinkedIn (`LinkedInSearch.tsx`) | ➕ TODO |
+| Gestión de clientes (`ClientsManagement.tsx`) | ➕ TODO |
+| Referir candidato / flujos de referencia (`ReferCandidateWizard.tsx`, `ReferredCandidates.tsx`) | ⏳ En Progreso |
+| Reportes y analítica (`ReportsAnalytics.tsx`) | ➕ TODO |
+
+**Observaciones:**
+- Se detectaron comentarios `TODO` en `src/components/Pages/Recruiter/CandidatesDatabase.tsx` (secciones de detalles, historial y estadísticas) que pueden requerir implementación adicional.
 
 _Notas: los estatus se infirieron por la presencia de componentes en `src/components/Pages/Recruiter` y `src/components/Pages/Candidate`. La presencia de un componente indica que la UI correspondiente existe; su funcionalidad completa (integración backend, validaciones, etc.) puede requerir verificación adicional._

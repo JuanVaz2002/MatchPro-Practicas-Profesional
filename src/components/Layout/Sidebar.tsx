@@ -29,7 +29,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: "home", label: "Home", icon: Home },
     { id: "upload-cv", label: "Upload CV", icon: Upload },
     { id: "job-search", label: "Job Search", icon: Search },
-    { id: "interview-prep", label: "Interview Prep", icon: MessageSquare },
   ]
 
   const employerMenuItems = [

@@ -85,7 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   candidateData.jobPreferences.jobType
                 ]
               );
-              
 
               const [insertLinkResult] = await matchprodb.query<any>(
                 `INSERT INTO candidates_database (candidate_id, recruiter_id, addedAt)
@@ -102,8 +101,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             
 
               const [result] = await matchprodb.query<any>(
-                `INSERT ai_analysis (candidate_id, strengths, concerns, recommendation, matchScore, cv_link, uploadedAt)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO ai_analysis (candidate_id, strengths, concerns, recommendation, matchScore, cv_link, cv_id, uploadedAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                  [
                   candidateID,
                   strengthsJson, 
@@ -111,6 +110,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   aiAnalysis.recommendation, 
                   aiAnalysis.score, 
                   aiAnalysis.cv_link,
+                  aiAnalysis.cv_id,
                   addedAt
                   
                  ]

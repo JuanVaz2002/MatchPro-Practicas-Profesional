@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     try {
 
-      const { candidateId, strengths, concerns, recommendation, matchScore, cv_link } = req.body;
+      const { candidateId, strengths, concerns, recommendation, matchScore, cv_id, cv_link } = req.body;
       
       console.log('Received AI analysis data:', req.body);
 
@@ -34,17 +34,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid data format for strengths or concerns' });
       }
 
-      // const [existing] = await matchprodb.query<any>(
-      //   `SELECT id FROM ai_analysis WHERE candidate_id = ? LIMIT 1`,
-      //   [candidateId]
-      // );
-
+      // Check whether an AI analysis already exists for this candidate
       const [existing] = await matchprodb.query<any>(
-        `SELECT cvUploaded FROM matchprodb.candidates WHERE ID = ? LIMIT 1`,
+        `SELECT id FROM matchprodb.ai_analysis WHERE candidate_id = ? LIMIT 1`,
         [candidateId]
       );
-      console.log(existing)
-      if(existing.length < 0 && existing[0].cvUploaded == 1) {
+      console.log(existing);
+      if (Array.isArray(existing) && existing.length > 0) {
 
         const [result] = await matchprodb.query<any>(
           `UPDATE ai_analysis 
@@ -52,16 +48,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                concerns = (?), 
                recommendation = (?), 
                matchScore = (?), 
-               cv_link = (?), 
                uploadedAt = (?)
-           WHERE  id = (?)`,
+           WHERE  candidate_id = (?)`,
 
            [
             strengthsJson, 
             concernsJson, 
             recommendation, 
             matchScore, 
-            cv_link,
             uploadedAt,
             candidateId
            ]
@@ -72,14 +66,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         const [result_candidate] = await matchprodb.query<any>(
           `UPDATE candidates 
-           SET matchScore = (?), 
-           WHERE  id = (?)`,
+           SET matchScore = (?) 
+           WHERE id = (?)`,
 
            [
             matchScore, 
             candidateId
            ]
-        )
+        );
 
         console.log('Candidate updated successfully:', result_candidate);
 
@@ -90,8 +84,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Insert into DB
         const [result] = await matchprodb.query<any>(
-          `INSERT INTO ai_analysis (candidate_id, strengths, concerns, recommendation, matchScore, cv_link, uploadedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO ai_analysis (candidate_id, strengths, concerns, recommendation, matchScore, cv_link, cv_id, uploadedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             candidateId,
             strengthsJson, 
@@ -99,6 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             recommendation, 
             matchScore, 
             cv_link,
+            cv_id,
             uploadedAt
           ]
         );
@@ -106,14 +101,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const [result_candidate] = await matchprodb.query<any>(
           `UPDATE candidates 
            SET cvUploaded = 1, 
-               matchScore = (?), 
-           WHERE  id = (?)`,
+               matchScore = (?) 
+           WHERE id = (?)`,
 
            [
             matchScore, 
             candidateId
            ]
-        )
+        );
 
         console.log('Candidate updated successfully:', result_candidate);
 

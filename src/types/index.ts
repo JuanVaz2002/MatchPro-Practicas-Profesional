@@ -70,6 +70,7 @@ interface User {
 
 interface Resume {
   cv_link: string
+  cv_id: string
   uploadedAt: string
 }
 
@@ -89,7 +90,7 @@ export interface Candidate extends User {
   professionalTitle?: string
   matchScore?: number
   availability?: string
-  recruitmentSource: RecruitmentSource,
+  recruitmentSource: RecruitmentSource | "",
   jobPreferences: JobPreferences
   workExperience: WorkExperience[]
   certifications: Certification[]

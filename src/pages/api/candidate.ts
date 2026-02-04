@@ -139,11 +139,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     matchScore: aiData.matchScore || 0,
                     resume: {
                         cv_link: aiData.cv_link || '',
+                        cv_id: aiData.cv_id || '',
                         uploadedAt: aiData.uploadedAt || ''
                     }
-                } : {}
+                } : undefined 
             };
         });
+        
+        // console.log(candidates[0].aiAnalysis.resume?.cv_id);
 
         res.status(200).json(candidates);
     }
@@ -161,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const workExperience: WorkExperience[] = completeProfile.workExperience;
         const certifications: Certification[] = completeProfile.certifications;
 
-
+        
         const skillsJSON = Array.isArray(basicInfo.skills) ? JSON.stringify(basicInfo.skills) : basicInfo.skills;
         const jobTypeJSON = Array.isArray(jobPreferences.jobType) ? JSON.stringify(jobPreferences.jobType) : jobPreferences.jobType;
         

@@ -1,9 +1,6 @@
-# Node / Next.js
 node_modules/
-.next/
-out/
-
-
+.env
+.env.local
 # Logs
 logs
 *.log
@@ -13,9 +10,6 @@ yarn-error.log*
 dev-debug.log
 # Dependency directories
 # Environment variables
-.env
-.env.local
-.env.*.local
 # Editor directories and files
 .idea
 .vscode
@@ -24,10 +18,10 @@ dev-debug.log
 *.njsproj
 *.sln
 *.sw?
+.next
 # OS specific
 .DS_Store
-.vscode/
-.cursor/
+
 # Task files
 # tasks.json
 # tasks/ 

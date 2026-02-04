@@ -2,8 +2,16 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Building, FileText, Users, ArrowLeft, ArrowRight, X } from "lucide-react"
+
+interface CompanyOption {
+  name: string
+  industry: string
+  size: string
+  founded: string
+  description: string
+}
 
 interface EmployerProfileData {
   fullName: string
@@ -63,6 +71,38 @@ export default function EmployerProfileForm({ onComplete, onBack, initialData }:
 
   const [currentRequirement, setCurrentRequirement] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [companies, setCompanies] = useState<CompanyOption[]>([])
+  const [loadingCompanies, setLoadingCompanies] = useState(true)
+
+  // Fetch companies on component mount
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch("/api/companyInfo")
+        const data = await response.json()
+        setCompanies(data)
+      } catch (error) {
+        console.error("Failed to fetch companies:", error)
+      } finally {
+        setLoadingCompanies(false)
+      }
+    }
+
+    fetchCompanies()
+  }, [])
+
+  // Auto-populate industry when company is selected
+  const handleCompanyChange = (companyName: string) => {
+    const selectedCompany = companies.find((c) => c.name === companyName)
+    setFormData((prev) => ({
+      ...prev,
+      companyName,
+      industry: selectedCompany?.industry || "",
+      companySize: selectedCompany?.size || prev.companySize,
+      foundedYear: selectedCompany?.founded ? Number.parseInt(selectedCompany.founded) : prev.foundedYear,
+      companyDescription: selectedCompany?.description || prev.companyDescription,
+    }))
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -207,15 +247,21 @@ export default function EmployerProfileForm({ onComplete, onBack, initialData }:
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.companyName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, companyName: e.target.value }))}
+                    onChange={(e) => handleCompanyChange(e.target.value)}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       errors.companyName ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Enter company name"
-                  />
+                    disabled={loadingCompanies}
+                  >
+                    <option value="">{loadingCompanies ? "Loading companies..." : "Select a company"}</option>
+                    {companies.map((company) => (
+                      <option key={company.name} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
                   {errors.companyName && <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>}
                 </div>
 
@@ -224,11 +270,9 @@ export default function EmployerProfileForm({ onComplete, onBack, initialData }:
                   <input
                     type="text"
                     value={formData.industry}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, industry: e.target.value }))}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.industry ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="e.g., Technology, Healthcare"
+                    readOnly
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    placeholder="Select a company first"
                   />
                   {errors.industry && <p className="text-red-500 text-sm mt-1">{errors.industry}</p>}
                 </div>

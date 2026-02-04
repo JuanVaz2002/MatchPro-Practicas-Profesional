@@ -35,7 +35,7 @@ export default function LoginForm({ onShowRegister }: LoginFormProps) {
       setPassword("demo1234")
       setRole("candidate")
     } else {
-      setEmail("sarah@techcorp.com")
+      setEmail("sarah@techcorp.org")
       setPassword("demo1234")
       setRole("recruiter")
     }
@@ -163,7 +163,7 @@ export default function LoginForm({ onShowRegister }: LoginFormProps) {
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <button onClick={onShowRegister} className="text-blue-600 hover:text-blue-700 font-medium">
-                Create one here
+                Create one here (Recruiter Only)
               </button>
             </p>
           </div>

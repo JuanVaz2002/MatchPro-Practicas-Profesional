@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Briefcase,  DollarSign, Clock, Users, Sparkles, CheckCircle } from 'lucide-react';
-import { string } from 'zod';
 import { Job } from '../../../types';
 import JobApplications from './JobApplications';
 import ManageJobs from './ManageJobs';
@@ -13,11 +12,7 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
 // Ubicación 
 // Años minimos de experiencia
 // Descipción del puesto
-  let candidateMin = 0;
-  let candidateMax = 0;
-  let applicationMin = 0;
-  let applicationMax = 0;
-  
+  const MAX_DESCRIPTION_CLIENT = 2000;
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -91,52 +86,54 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();    
 
-    // setIsSubmitting(true);
+    if (!validInformation()) return;
 
+    setIsSubmitting(true);
     try {
-      console.log('Submitting form data:', formData);
-      
+      const payload = { ...formData };
+      if (payload.description && payload.description.length > MAX_DESCRIPTION_CLIENT) {
+        payload.description = payload.description.slice(0, MAX_DESCRIPTION_CLIENT - 3) + '...';
+      }
+
+      console.log('Submitting form data:', payload);
+
       const response = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
-      console.log(`API Response: ${result}`);
+      console.log('API Response:', result);
 
       if (response.ok) {
         setJobPosted(true);
-        console.log(`Job created successfully: ${result}`);
-        setSelectedJobId(String(result.insertId));
+        setSelectedJobId(String(result.id || result.insertId || ''));
       } else {
         console.error('Failed to create job:', result);
         alert(`Failed to create job: ${result.error || result.message || 'Unknown error'}`);
       }
-
-      
-
-
-    } catch (error) {
-      console.error('Error submitting job:', error);
-      alert(`Error creating job: ${error.message}`);
+    } catch (err) {
+      const e = err as Error;
+      console.error('Error submitting job:', e);
+      alert(`Error creating job: ${e.message}`);
     } finally {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 2000);
+      setIsSubmitting(false);
     }
   };
   
   const resetDataForm = (): void => {
 
     // Reset the value
-    formData.title = '';
-    formData.company = '';
-    formData.department = '';
-    formData.location = '';
-    formData.experience = 0;
-    formData.description = '';
-    formData.recruiterID = recruiterID;
+    setFormData({
+      title: '',
+      company: '',
+      department: '',
+      location: '',
+      experience: 0,
+      description: '',
+      recruiterID: recruiterID
+    });
 
   }
 
@@ -148,7 +145,8 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
       formData.department.trim() !== '' &&
       formData.location.trim() !== '' &&
       formData.experience !== 0 &&
-      formData.description.trim() !== ''
+      formData.description.trim() !== '' &&
+      formData.description.length <= MAX_DESCRIPTION_CLIENT
     );
   };
 
@@ -179,15 +177,7 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
             <p className="text-gray-600 mb-6">
               Your job posting for "{output.title}" is now live and visible to candidates.
             </p>
-            <div className="bg-blue-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-900 mb-2">What happens next?</h3>
-              <ul className="text-blue-800 text-sm space-y-1 text-left">
-                <li>• AI will start matching qualified candidates</li>
-                <li>• You'll receive applications in your dashboard</li>
-                <li>• Automatic screening will rank candidates</li>
-                <li>• Analytics will track job performance</li>
-              </ul>
-            </div>
+            
             <div className="flex space-x-4 justify-center">
               <button
                 onClick={() => {
@@ -383,26 +373,6 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
                 </div>
                 <p className="text-gray-700 text-sm">{output.description}</p>
               </div>
-
-              <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
-                <div className="flex items-center mb-4">
-                  <Sparkles className="w-6 h-6 text-blue-600 mr-2" />
-                  <h3 className="font-semibold text-blue-900">AI Optimization Ready</h3>
-                </div>
-                <p className="text-blue-800 text-sm mb-4">
-                  Your job posting will be automatically optimized for better candidate matching and visibility.
-                </p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="bg-white rounded p-3">
-                    <div className="font-medium text-gray-900">Estimated Matches</div>
-                    <div className="text-blue-600 font-semibold">{candidateMin}-{candidateMax} candidates</div>
-                  </div>
-                  <div className="bg-white rounded p-3">
-                    <div className="font-medium text-gray-900">Expected Applications</div>
-                    <div className="text-blue-600 font-semibold">{applicationMin}-{applicationMax} per week</div>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -441,13 +411,6 @@ export default function PostJob({userID: recruiterID}: PostJobProps ) {
               ) : (
                 <button
                   type="submit"
-                  onClick={() => {
-                    setIsSubmitting(true);
-                    setTimeout(() => {
-                      setIsSubmitting(false);
-                      setJobPosted(true);
-                      }, 2000);
-                  }}
                   disabled={isSubmitting}
                   className="bg-green-600 text-white px-8 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import RegistrationForm from "./RegistrationForm"
-import CandidateProfileForm from "./Candidate/CandidateProfileForm"
+import EmployerProfileForm from "./Recruiter/EmployerProfileForm"
 import { useAuth } from "../../contexts/AuthContext"
 
 interface RegistrationContainerProps {
@@ -10,10 +10,10 @@ interface RegistrationContainerProps {
 }
 
 interface RegistrationData {
-  username: string
+  fullName: string
   email: string
   password: string
-  role: "candidate"
+  role: "recruiter"
 }
 
 export default function RegistrationContainer({ onShowLogin }: RegistrationContainerProps) {
@@ -55,11 +55,11 @@ export default function RegistrationContainer({ onShowLogin }: RegistrationConta
 
   if (currentStep === "profile" && registrationData) {
     return (
-      <CandidateProfileForm
+      <EmployerProfileForm
         onComplete={handleProfileComplete}
         onBack={handleBackToRegistration}
         initialData={{
-          fullName: registrationData.username,
+          fullName: registrationData.fullName,
         }}
       />
     )

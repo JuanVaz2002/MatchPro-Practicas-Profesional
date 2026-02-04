@@ -54,7 +54,6 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
     phone: '',
     experience: 0,
     location: '',
-    professionalTitle: '',
     jobPreferences: {
       salary : {
         min: 0,
@@ -73,15 +72,15 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
   const [scoreColor, setScoreColor] = useState<string>('');
 
   // Form data state
-  const [basicInfo, setBasicInfo] = useState({
-    nombre: '',
+  const [basicInfo, setBasicInfo] = useState<Partial<Candidate>>({
+    name: '',
     email: '',
     password: '',
     phone: '',
-    ubicacion: '',
+    location: '',
     experience: 0,
-    rolActual: '',
-    fuenteReclutamiento: '',
+    professionalTitle: '',
+    recruitmentSource: "",
   });
 
   const [validationErrors, setValidationErrors] = useState({
@@ -306,28 +305,16 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
       jobType: jobPreferences.jobType as JobPreferences['jobType'],
     };
 
-    // Create candidate object for upload
-    const currentCandidate: Partial<Candidate> = {
-      name: basicInfo.nombre,
-      email: basicInfo.email,
-      password: basicInfo.password,
-      phone: basicInfo.phone,
-      location: basicInfo.ubicacion,
-      professionalTitle: basicInfo.rolActual,
-      experience: basicInfo.experience,
-      recruitmentSource: basicInfo.fuenteReclutamiento as Candidate['recruitmentSource'],
-      jobPreferences: normalizedJobPreferences,
-    };
-    setCandidateData(currentCandidate);
-
+    // Prepare form data
     const formData = new FormData();
-    formData.append('candidateData', JSON.stringify(currentCandidate));
+    formData.append('name', basicInfo.name || "");
+    formData.append('professionalTitle', basicInfo.professionalTitle || "");
     formData.append('file', uploadedFile);
 
 
     try {
       // Simulate API call - replace with actual endpoint
-      const response = await fetch('http://localhost:5678/webhook/upload-cv-candidate', {
+      const response = await fetch('http://localhost:5678/webhook-test/upload-cv-candidate', {
         method: 'POST',
         body: formData,
       });
@@ -338,20 +325,43 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      // Parse the JSON response
-      const responseData = await response.json();
+      // Parse the response safely (handle empty or non-JSON bodies)
+      let responseData: any = {};
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          responseData = await response.json();
+        } else {
+          const text = await response.text();
+          if (text) {
+            try {
+              responseData = JSON.parse(text);
+            } catch (e) {
+              console.warn('Upload response not valid JSON, using raw text as message', text);
+              responseData = { message: text };
+            }
+          } else {
+            responseData = {};
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to parse upload response:', err);
+        responseData = {};
+      }
+
       console.log("Response data:", responseData); // DEBUG
-      
+
       // Create analysis results with safety checks
       const analysis = {
-        score: responseData.score || 0,
+        score: typeof responseData.score === 'number' ? responseData.score : 0,
         strengths: Array.isArray(responseData.strengths) ? responseData.strengths : [],
         concerns: Array.isArray(responseData.concerns) ? responseData.concerns : [],
-        recommendation: responseData.recommendation || '',
+        recommendation: responseData.recommendation || responseData.message || '',
         improvements: Array.isArray(responseData.improvements) ? responseData.improvements : [],
         keywords: Array.isArray(responseData.keywords) ? responseData.keywords : [],
         missingKeywords: Array.isArray(responseData.missingKeywords) ? responseData.missingKeywords : [],
-        cv_link: responseData.url || ''
+        cv_link: responseData.url || '',
+        cv_id: responseData.cv_id || ''
       };
 
       setResult(analysis);
@@ -371,6 +381,25 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
         setScoreColor("red");
       }
       console.log("Analysis:", analysis);
+
+      // Populate candidateData with basic info and normalized job preferences, plus a brief AI summary
+      setCandidateData(prev => ({
+        ...prev,
+        ...basicInfo,
+        jobPreferences: normalizedJobPreferences,
+        cvUploaded: true,
+        aiAnalysis: {
+          strengths: analysis.strengths,
+          concerns: analysis.concerns,
+          recommendation: analysis.recommendation,
+          matchScore: analysis.score,
+          resume: {
+            cv_link: analysis.cv_link || '',
+            cv_id: analysis.cv_id || '',
+            uploadedAt: new Date().toISOString()
+          }
+        }
+      }));
     } catch (error) {
       console.error('Error uploading CV:', error);
       setUploadError('Upload failed. Please try again.');
@@ -406,7 +435,7 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
           aiAnalysis: result
         })
       });
-
+      
       const result2 = await response2.json();
       console.log("API Response:", result2);
 
@@ -432,7 +461,19 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 0: // Basic Information
-        return !!(validateEmail(basicInfo.email) && basicInfo.password && validatePhone(basicInfo.phone) && basicInfo.rolActual && !validationErrors.email && !validationErrors.phone && jobPreferences.jobType && jobPreferences.salary.min < jobPreferences.salary.max && basicInfo.fuenteReclutamiento !== '' && basicInfo.nombre !== '' && basicInfo.nombre);
+        return !!(
+          validateEmail(basicInfo.email ?? '') && 
+          basicInfo.password && 
+          validatePhone(basicInfo.phone ?? '') && 
+          basicInfo.professionalTitle && 
+          !validationErrors.email && 
+          !validationErrors.phone && 
+          jobPreferences.jobType && 
+          jobPreferences.salary.min < jobPreferences.salary.max && 
+          (basicInfo.recruitmentSource ?? '') !== '' && 
+          basicInfo.name !== '' && 
+          basicInfo.name
+        );
       case 1: // CV Upload
         return analysisComplete;
       default:
@@ -459,8 +500,8 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
               </label>
               <input
                 type="text"
-                value={basicInfo.nombre}
-                onChange={(e) => updateBasicInfo('nombre', e.target.value)}
+                value={basicInfo.name}
+                onChange={(e) => updateBasicInfo('name', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., John Doe"
                 required
@@ -514,8 +555,8 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
               </label>
               <input
                 type="text"
-                value={basicInfo.ubicacion}
-                onChange={(e) => updateBasicInfo('ubicacion', e.target.value)}
+                value={basicInfo.location}
+                onChange={(e) => updateBasicInfo('location', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., San Francisco, CA"
               />
@@ -527,8 +568,8 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
               </label>
               <input
                 type="text"
-                value={basicInfo.rolActual}
-                onChange={(e) => updateBasicInfo('rolActual', e.target.value)}
+                value={basicInfo.professionalTitle}
+                onChange={(e) => updateBasicInfo('professionalTitle', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., Senior Software Developer"
                 required
@@ -555,8 +596,8 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
                 Recruitment Source *
               </label>
               <select
-                value={basicInfo.fuenteReclutamiento}
-                onChange={(e) => updateBasicInfo('fuenteReclutamiento', e.target.value)}
+                value={basicInfo.recruitmentSource}
+                onChange={(e) => updateBasicInfo('recruitmentSource', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
@@ -762,6 +803,23 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
             )}
           </div>
 
+          {/* Allow replacing the CV after analysis */}
+          {analysisComplete && (
+            <div className="flex items-center gap-3">
+              <button
+                className="px-6 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                onClick={() => {
+                  // allow user to download or view cv link if available; if none, just clear file
+                  if (aiAnalysis && aiAnalysis.cv_link) {
+                    window.open(aiAnalysis.cv_link, '_blank');
+                  } 
+                }}
+              >
+                View CV
+              </button>
+            </div>
+          )}
+
           {/* Analysis Results */}
           {analysisComplete && aiAnalysis && (
             <div className="space-y-6">
@@ -904,14 +962,14 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
     setAiAnalysis(null);
     setScoreColor('');
     setBasicInfo({
-      nombre: '',
+      name: '',
       email: '',
       password: '',
       phone: '',
-      ubicacion: '',
+      location: '',
       experience: 0,
-      rolActual: '',
-      fuenteReclutamiento: ''
+      professionalTitle: '',
+      recruitmentSource: ''
     });
     setSalaryRangeInput('');
     setJobPreferences({
@@ -921,6 +979,8 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
     });
     setValidationErrors({ email: '', phone: '' });
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -1021,12 +1081,14 @@ export default function CandidateRegistrationWizard({ onBack, recruiterID }: Can
 
               if (analysisIsEmpty) {
                 return (
-                  <button
-                    onClick={resetRegistration}
-                    className="flex items-center px-8 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-                  >
-                    Reset Registration
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={resetRegistration}
+                      className="flex items-center px-6 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      Reset Registration
+                    </button>
+                  </div>
                 );
               }
 

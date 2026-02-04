@@ -11,15 +11,16 @@ interface RegistrationFormProps {
 }
 
 interface FormData {
-  username: string
+  fullName: string
   email: string
   password: string
   confirmPassword: string
-  role: "candidate"
+  role: "recruiter"
 }
 
 interface ValidationErrors {
-  username?: string
+  general?: string
+  fullName?: string
   email?: string
   password?: string
   confirmPassword?: string
@@ -27,11 +28,11 @@ interface ValidationErrors {
 
 export default function RegistrationForm({ onShowLogin, onRegistrationComplete }: RegistrationFormProps) {
   const [formData, setFormData] = useState<FormData>({
-    username: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "candidate",
+    role: "recruiter",
   })
 
   const [errors, setErrors] = useState<ValidationErrors>({})
@@ -63,10 +64,10 @@ export default function RegistrationForm({ onShowLogin, onRegistrationComplete }
   // Real-time validation
   const validateField = (name: string, value: string): string | undefined => {
     switch (name) {
-      case "username":
-        if (!value.trim()) return "Username is required"
-        if (value.length < 3) return "Username must be at least 3 characters"
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return "Username can only contain letters, numbers, and underscores"
+      case "fullName":
+        if (!value.trim()) return "Full name is required"
+        if (value.length < 8) return "Full name must be at least 8 characters"
+        if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(value)) return "Full name can only contain letters and spaces (only one between words)"
         return undefined
 
       case "email":
@@ -115,7 +116,7 @@ export default function RegistrationForm({ onShowLogin, onRegistrationComplete }
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {}
 
-    newErrors.username = validateField("username", formData.username)
+    newErrors.fullName = validateField("fullName", formData.fullName)
     newErrors.email = validateField("email", formData.email)
     newErrors.password = validateField("password", formData.password)
     newErrors.confirmPassword = validateField("confirmPassword", formData.confirmPassword)
@@ -137,7 +138,7 @@ export default function RegistrationForm({ onShowLogin, onRegistrationComplete }
         // If we have a completion handler, use it (for the new flow)
         await new Promise((resolve) => setTimeout(resolve, 1500)) // Simulate API call
         onRegistrationComplete({
-          username: formData.username,
+          username: formData.fullName,
           email: formData.email,
           password: formData.password,
           role: formData.role,
@@ -145,7 +146,7 @@ export default function RegistrationForm({ onShowLogin, onRegistrationComplete }
       } else {
         // Original flow for backward compatibility
         await register({
-          username: formData.username,
+          username: formData.fullName,
           email: formData.email,
           password: formData.password,
           role: formData.role,
@@ -174,58 +175,34 @@ export default function RegistrationForm({ onShowLogin, onRegistrationComplete }
               <Briefcase className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900">Join MatchPro</h1>
-            <p className="text-gray-600 mt-2">Create your account to get started</p>
-            <button
-              onClick={onShowLogin}
-              className="mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center mx-auto"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Exit to Login
-            </button>
+            <p className="text-gray-600 mt-2">Create your recruiter account to get started</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, role: "candidate" }))}
-                  className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg border-2 transition-all ${
-                    formData.role === "candidate"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="font-medium">Candidate</span>
-                </button>
-              </div>
-            </div>
+   
 
-            {/* Username */}
+            {/* Full Name */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
               </label>
               <input
                 type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.username ? "border-red-300" : "border-gray-300"
+                  errors.fullName ? "border-red-300" : "border-gray-300"
                 }`}
-                placeholder="Enter your username"
+                placeholder="Enter your full name"
                 required
               />
-              {errors.username && (
+              {errors.fullName && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <AlertCircle className="w-4 h-4 mr-1" />
-                  {errors.username}
+                  {errors.fullName}
                 </p>
               )}
             </div>

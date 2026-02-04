@@ -2,6 +2,69 @@ import React, { useState, useCallback } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { Candidate } from '../../types';
 
+// Utility function to determine the appropriate URL based on candidate CV link
+// The function now accepts the candidate CV link (if any), parses its hostname
+// and verifies that the link itself is accessible. Both must be true to use
+// the overwrite endpoint; otherwise the upload endpoint is used as a fallback.
+const getConditionalUploadUrl = async (cvLink?: string): Promise<string> => {
+  const OVERWRITE_URL = 'http://localhost:5678/webhook/overwrite-cv-candidate';
+  const UPLOAD_URL = 'http://localhost:5678/webhook/upload-cv-candidate';
+
+  try {
+    if (!cvLink) {
+      console.log('No CV link provided; using upload endpoint');
+      return UPLOAD_URL;
+    }
+
+    let hostname = '';
+    try {
+      hostname = new URL(cvLink).hostname;
+    } catch (err) {
+      console.warn('Invalid CV link URL, falling back to upload endpoint:', cvLink, err);
+      return UPLOAD_URL;
+    }
+
+    const isDropboxDomain = hostname.toLowerCase().includes('dropbox');
+    console.log('CV link hostname:', hostname, 'isDropboxDomain:', isDropboxDomain);
+
+    // Test accessibility of the CV link itself
+    const isLinkAccessible = await testLinkAccessibility(cvLink);
+    console.log('CV link accessibility:', isLinkAccessible);
+
+    if (isDropboxDomain && isLinkAccessible) {
+      return OVERWRITE_URL;
+    }
+
+    return UPLOAD_URL;
+  } catch (error) {
+    console.error('Error determining URL, falling back to upload endpoint:', error);
+    return UPLOAD_URL;
+  }
+};
+
+// Helper function to test if a link is accessible
+const testLinkAccessibility = async (url: string, timeoutMs: number = 5000): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(url, {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    // In no-cors mode, status 0 means the request succeeded
+    return response.status === 0 || (response.status >= 200 && response.status < 400);
+  } catch (error) {
+    // Network error, timeout, or abort
+    console.warn(`Link accessibility test failed for ${url}:`, error);
+    return false;
+  }
+};
+
 // import { Candidate } from '../../types';
 interface CVUploadProps {
   candidate: Candidate;
@@ -65,20 +128,21 @@ export default function CVUpload({ candidate }: CVUploadProps) {
     setAnalyzing(true);
     setAnalysisComplete(false);
 
-
+    console.log(`number: ${candidate.aiAnalysis?.resume?.cv_id}`);
     const formData = new FormData();
     formData.append('name', candidate.name);
-    formData.append('professionalTitle', candidate.professionalTitle);
+    formData.append('professionalTitle', candidate.professionalTitle || '');
     formData.append('file', uploadedFile);
-    formData.append('skills', JSON.stringify(candidate.skills));
-    formData.append('experience', candidate.experience.toString());
-    formData.append('jobPreferences', JSON.stringify(candidate.jobPreferences));
-    formData.append('workExperience', JSON.stringify(candidate.workExperience));
-    formData.append('certifications', JSON.stringify(candidate.certifications));
+    formData.append("number", candidate.aiAnalysis?.resume?.cv_id);
+    
 
+    // Determine the appropriate URL based on candidate's CV link domain and accessibility
+    const cvLink = candidate?.aiAnalysis?.resume?.cv_link;
+    const uploadUrl = await getConditionalUploadUrl(cvLink);
     
     try {
-      const response = await fetch('http://localhost:5678/webhook/upload-cv-candidate', {
+      // console.log(candidate.aiAnalysis?.resume?.cv_id);
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
       });
@@ -132,7 +196,8 @@ export default function CVUpload({ candidate }: CVUploadProps) {
       concerns: result["concerns"],
       recommendation: result["recommendation"],
       matchScore: result["score"],
-      cv_link: result["url"]
+      cv_link: result["url"],
+      cv_id: result["num"]
     };
 
     try {
@@ -353,25 +418,6 @@ export default function CVUpload({ candidate }: CVUploadProps) {
                         ))}
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Job-Specific Optimization */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Job-Specific Optimization</h3>
-                  <p className="text-gray-600 mb-4">
-                    Optimize your CV for specific job postings to increase your match score
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {['Senior Frontend Developer', 'Full Stack Engineer', 'React Developer'].map((job) => (
-                      <button
-                        key={job}
-                        onClick={() => optimizeForJob(job)}
-                        className="bg-white text-blue-600 px-4 py-3 rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors text-sm font-medium"
-                      >
-                        Optimize for {job}
-                      </button>
-                    ))}
                   </div>
                 </div>
               </div>

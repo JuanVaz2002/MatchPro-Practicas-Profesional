@@ -22,15 +22,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Received job data for posting:', req.body);
 
       const addedAt = new Date().toISOString().split('T')[0];
-      const [result] = await matchprodb.query<any>(
-        `INSERT INTO jobs (recruiterID, title, company, department, location, experience, description, createdAt, 
-                           job_type, salaryMin, salaryMax, requirements, benefits, skills, steps, views, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-         [
-          recruiterID, title, company, department, location, Number(experience), description, addedAt, default_job_type, 
-          default_salaryMin, default_salaryMax, default_requirements, default_benefits, default_skills, default_steps, views, default_status
-         ]
-      );
+        // Determine max length allowed for the description column and truncate if necessary
+        let descriptionToInsert = description || '';
+        try {
+          const [colInfoRows] = await matchprodb.query<any[]>(
+            `SELECT CHARACTER_MAXIMUM_LENGTH
+             FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'jobs' AND COLUMN_NAME = 'description'`
+          );
+
+          const maxLen = colInfoRows && colInfoRows[0] && colInfoRows[0].CHARACTER_MAXIMUM_LENGTH;
+          if (maxLen && typeof maxLen === 'number') {
+            if (descriptionToInsert.length > maxLen) {
+              console.warn(`Truncating description from ${descriptionToInsert.length} to ${maxLen} characters`);
+              descriptionToInsert = descriptionToInsert.slice(0, maxLen - 3) + '...';
+            }
+          }
+          // If maxLen is null, column is likely TEXT/BLOB and no truncation is necessary
+        } catch (colErr) {
+          console.warn('Could not determine description column max length:', colErr);
+        }
+
+        const [result] = await matchprodb.query<any>(
+          `INSERT INTO jobs (recruiterID, title, company, department, location, experience, description, createdAt, 
+                             job_type, salaryMin, salaryMax, requirements, benefits, skills, steps, views, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           [
+            recruiterID, title, company, department, location, Number(experience), descriptionToInsert, addedAt, default_job_type,
+            default_salaryMin, default_salaryMax, default_requirements, default_benefits, default_skills, default_steps, views, default_status
+           ]
+        );
 
       console.log('Job inserted successfully:', result);
       return res.status(201).json({ message: 'Job created successfully', id: (result as any).insertId });

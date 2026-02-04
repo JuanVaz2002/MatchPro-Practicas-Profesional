@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Insert into DB
       const [result] = await matchprodb.query<any>(
         `INSERT INTO applications (jobId, candidateId, status, appliedAt, reviewed)
-          VALUES (?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?)`,
         [
           jobId,
           candidateId,

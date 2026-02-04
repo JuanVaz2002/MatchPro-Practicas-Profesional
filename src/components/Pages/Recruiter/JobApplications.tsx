@@ -1034,7 +1034,7 @@ export default function JobApplications({ jobId, onBack, recruiterID }: JobAppli
                                     {highlightMatch(candidate.name, searchQuery)}
                                   </p>
                                   <p className="text-sm text-gray-600 truncate">
-                                    {highlightMatch(candidate.professionalTitle, searchQuery)}
+                                    {highlightMatch(candidate.professionalTitle || "", searchQuery)}
                                   </p>
                                 </div>
                                 {selectedApplication?.candidateId === candidate.id && (
