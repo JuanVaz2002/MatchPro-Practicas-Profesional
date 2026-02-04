@@ -146,15 +146,15 @@ MatchPro optimiza los procesos de contratación y empodera a los candidatos, cre
      - client_secret: App Secret
   
 4. Configuración de credencial del modelo para un agente de IA:
-  Opcion A: Configurir un credencial del nodo "OpenAI Chat Model" para LM Studio
-    - Host: http://localhost:1234/v1
-    - API Key: Escribirlo falso (LM Studio no requiere clave por defecto, pero verifica la configuración local)
-    - Model
-      - By ID: Escribir el nombre del modelo seleccionado (Recomendación: openai/gpt-oss-20b)
+   - Opcion A: Configurir un credencial del nodo "OpenAI Chat Model" para LM Studio
+       - Host: http://localhost:1234/v1
+       - API Key: Escribirlo falso (LM Studio no requiere clave por defecto, pero verifica la configuración local)
+       - Model
+         - By ID: Escribir el nombre del modelo seleccionado (Recomendación: openai/gpt-oss-20b)
 
-  Opcion B: Configuir un credencial del nodo "Google Gemini Chat Model"
-    - Host: https://generativelanguage.googleapis.com
-    - API Key: La clave de su proyecto en Google AI Studio: https://aistudio.google.com/app/apikey
+   - Opcion B: Configuir un credencial del nodo "Google Gemini Chat Model"
+       - Host: https://generativelanguage.googleapis.com
+       - API Key: La clave de su proyecto en Google AI Studio: https://aistudio.google.com/app/apikey
 ---
 
 ## Instrucción de MySQL:
