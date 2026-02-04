@@ -1,5 +1,5 @@
 {
-  "name": "MatchPro-Workflow copy",
+  "name": "MatchPro-Workflow",
   "nodes": [
     {
       "parameters": {
@@ -7,26 +7,12 @@
         "binaryPropertyName": "file",
         "options": {}
       },
-      "id": "c8d33d40-970a-419e-9e7c-84910d6a176e",
+      "id": "1e050dcb-9077-4bed-ba5e-0ca54b503dc1",
       "name": "Extract from File",
       "type": "n8n-nodes-base.extractFromFile",
       "position": [
         -928,
         1248
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-2.0-flash",
-        "options": {}
-      },
-      "id": "556f01e0-8691-4bff-88ad-8186b3bd701a",
-      "name": "Google Gemini Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "position": [
-        -96,
-        2096
       ],
       "typeVersion": 1
     },
@@ -44,7 +30,7 @@
         -656,
         1408
       ],
-      "id": "b4719f4c-0737-4792-b1f8-55bfdeb1206c",
+      "id": "0434db6a-ee3f-4a02-8caa-d654750d4c5e",
       "name": "Merge1"
     },
     {
@@ -57,25 +43,8 @@
         32,
         1360
       ],
-      "id": "adc84ca9-1b31-459d-8bbd-3447e284ea84",
+      "id": "e2693ca6-2f4b-4cab-9b0d-59b20d18e5ab",
       "name": "Code1"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "dc2da8f7-8255-49ca-9feb-64d6a0a33bef",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        -1184,
-        1424
-      ],
-      "id": "d4b90c9f-fbaf-432a-adac-5f01d5f034a5",
-      "name": "Webhook",
-      "webhookId": "dc2da8f7-8255-49ca-9feb-64d6a0a33bef"
     },
     {
       "parameters": {
@@ -89,7 +58,7 @@
         1152,
         1376
       ],
-      "id": "4c252392-9284-4b9e-af95-7fe8c787c21c",
+      "id": "3418e1d7-8462-4381-9aab-da28e316a68b",
       "name": "Merge2"
     },
     {
@@ -102,7 +71,7 @@
         1520,
         1376
       ],
-      "id": "4fd1179c-ab52-47a1-82f5-18077c329f58",
+      "id": "9241dc06-1b7f-4ccb-92ee-0d94465bf07b",
       "name": "Respond to Webhook"
     },
     {
@@ -118,16 +87,22 @@
         288,
         1472
       ],
-      "id": "3dd3d0db-4a9a-4269-9654-d4c3ef7f4465",
+      "id": "2e34e05f-9095-449e-943a-4147a78d179e",
       "name": "Upload a file",
       "alwaysOutputData": false,
       "executeOnce": false,
       "retryOnFail": false,
-      "notesInFlow": false
+      "notesInFlow": false,
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "2btN5vCEYtjea7z7",
+          "name": "Dropbox account"
+        }
+      }
     },
     {
       "parameters": {
-        "jsCode": "// Get the parsed AI analysis results from the workflow\n// Adjust the index or data source if needed\nconst analysis = items[0].json;\n\n// Build the response object\nreturn [\n  {\n    json: {\n      score: analysis.score || 0,\n      strengths: analysis.strengths || [],\n      improvements: analysis.improvements || [],\n      keywords: analysis.keywords || [],\n      missingKeywords: analysis.missingKeywords || [],\n      concerns: analysis.concerns || [],\n      recommendation: analysis.recommendation || \"\",\n      url: analysis.url || \"\"\n    }\n  }\n];\n"
+        "jsCode": "// Get the parsed AI analysis results from the workflow\n// Adjust the index or data source if needed\nconst analysis = items[0].json;\n\n// Build the response object\nreturn [\n  {\n    json: {\n      score: analysis.score || 0,\n      strengths: analysis.strengths || [],\n      improvements: analysis.improvements || [],\n      keywords: analysis.keywords || [],\n      missingKeywords: analysis.missingKeywords || [],\n      concerns: analysis.concerns || [],\n      recommendation: analysis.recommendation || \"\",\n      url: analysis.url || \"\",\n      cv_id: analysis.num || 0\n    }\n  }\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -135,7 +110,7 @@
         1344,
         1376
       ],
-      "id": "2cb74675-9c86-4934-85f8-fb2567322e5e",
+      "id": "90b7dde8-6042-4e7c-bc4c-c65ba5b9b4fb",
       "name": "Code2"
     },
     {
@@ -152,15 +127,15 @@
             },
             {
               "name": "refresh_token",
-              "value": "ESCRIBA REFRESH TOKEN AQUI"
+              "value": "[ESCRIBA REFRESH TOKEN AQUI]"
             },
             {
               "name": "client_id",
-              "value": "ESCRIBA CLIENT ID AQUI"
+              "value": "[ESCRIBA CLIENT ID AQUI]"
             },
             {
               "name": "client_secret",
-              "value": "ESCRIBA CLIENT SECRET AQUI"
+              "value": "[ESCRIBA CLIENT SECRET AQUI]"
             }
           ]
         },
@@ -172,7 +147,7 @@
         464,
         1472
       ],
-      "id": "e141ffe1-b9bf-4ef1-ad18-40486630ed30",
+      "id": "81d2dfef-1063-4618-a1e7-fd3ef50b4adb",
       "name": "Dropbox HTTP Request1"
     },
     {
@@ -199,29 +174,12 @@
         976,
         1488
       ],
-      "id": "b16f3b7e-7a91-4082-9c7d-8833843ce410",
+      "id": "5c240531-5fe0-4d3f-ac55-4f1a972f3faf",
       "name": "HTTP Request3"
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.text }} {{ $json.professionalTitle }} {{ $json.experience }} {{ $json.jobPreferences.salary.min }} {{ $json.jobPreferences.salary.max }} {{ $json.jobPreferences.location }} {{ $json.jobPreferences.jobType }} {{ $json.recruitmentSource }}",
-        "options": {
-          "systemMessage": "=CV: {{ $json.text }} \nRecruitment Source: {{ $json.recruitmentSource }}\nYou are an AI assistant that analyzes CVs and returns structured data for the candidate. Your task is to evaluate the quality of the candidate's CV based on the content and formatting, considering the candidate's professional title, {{ $json.professionalTitle }}.\nUse the following JSON format for your response:\n{\n  \"num\": [Generate the number between 0 and 999999]\n  \"score\": [a number between 0 and 100 indicating the overall quality and suitability for the {{ $json.professionalTitle }} role],\n  \"strengths\": [a list of strengths from the CV, such as relevant experience, certifications, or skills],\n  \"concerns\": [A list of concerns about the candidate's profile, such as gaps in experience or a lack of certain skills],\n  \"recommendation\": \"A sentence of recommendation for the candidate, considering their professionalTitle, score, and their information (skills, experience, and education).\",\n  \"improvements\": [a list of suggested improvements, such as adding missing keywords or reformatting sections],\n  \"keywords\": [important keywords relevant to the professional title found in the CV],\n  \"missingKeywords\": [important keywords expected for the professional title that are missing from the CV]\n}\n\nContext:\n- The input provided is the raw extracted text from a CV.\n- The candidate’s professional title is {{ $json.professionalTitle }}. Use this to determine which keywords should ideally appear.\n- Score breakdown: 40% content relevance, 30% formatting/structure, 30% keyword presence.\n- The candidate's name is from the CV.\n- The candidate's total experience is {{ $json.experience }} years.\n- The candidate's job preferences include a salary range of ${{ $json.jobPreferences.salary.min }} to ${{ $json.jobPreferences.salary.max }}, preferred locations: {{ $json.jobPreferences.location }}, and job type: {{ $json.jobPreferences.jobType }}.\n- Specific work experience, skills, Certification, and Education details can be found in the CV ({{ $json.text }})."
-        }
-      },
-      "id": "7ba16a38-22b2-4e8f-a9c8-689f66ae7d8c",
-      "name": "CV Analysis Candidate",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "position": [
-        -336,
-        1360
-      ],
-      "typeVersion": 2
-    },
-    {
-      "parameters": {
-        "jsCode": "const candidateRaw = $input.first().json.body.candidateData;\n\nlet candidate;\ntry {\n  candidate = JSON.parse(candidateRaw);\n} catch (e) {\n  candidate = candidateRaw; // fallback in case it’s already parsed\n}\n\nreturn [{ json: candidate }];\n"
+        "jsCode": "const candidateRaw = $input.first().json.body;\n\nlet candidate;\ntry {\n  candidate = JSON.parse(candidateRaw);\n} catch (e) {\n  candidate = candidateRaw; // fallback in case it’s already parsed\n}\n\nreturn [{ json: candidate }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -229,7 +187,7 @@
         -928,
         1616
       ],
-      "id": "957dff85-a891-42cd-83e2-7b7bc5cefe9d",
+      "id": "68fff86b-e77a-4aad-8433-3dc5f0905cee",
       "name": "Code7"
     },
     {
@@ -240,7 +198,7 @@
           "keepSource": "binary"
         }
       },
-      "id": "e27e4ea1-44be-4931-a249-c3696fcec593",
+      "id": "de9e2667-a4cf-4324-a695-7b8362d695ec",
       "name": "Extract from File3",
       "type": "n8n-nodes-base.extractFromFile",
       "position": [
@@ -264,7 +222,7 @@
         128,
         1552
       ],
-      "id": "f92d7d50-608f-4d10-9ba2-6df5dc1d7e9e",
+      "id": "11602b5b-ae75-4d35-b3f1-bc7df8e08606",
       "name": "Merge"
     },
     {
@@ -281,8 +239,258 @@
         784,
         1488
       ],
-      "id": "e07dad45-b43f-441d-a45a-eb2b7da8e46b",
+      "id": "886eadf1-6b97-4b28-b6aa-d901e4e64051",
       "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "id": "c6a39d9f-31d9-41d7-9c1d-c3122cf1b35d",
+      "name": "Extract from File1",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -912,
+        2144
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -624,
+        2304
+      ],
+      "id": "f8c6b24a-ce1d-40d3-8a4d-f68a53233396",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items[0].json.output;\n\n// Limpiar los ```json y los saltos de línea, luego hacer parse\nconst cleanJsonStr = raw.replace(/```json|```/g, '').trim();\n\nconst parsed = JSON.parse(cleanJsonStr);\n\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        2256
+      ],
+      "id": "64b99c2f-9619-47e1-aba9-6783053d9464",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        2272
+      ],
+      "id": "a67e1418-149a-4657-b403-88e8bd33fa96",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1552,
+        2272
+      ],
+      "id": "f4846781-b5c4-48df-bf95-f88a49cd9899",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the parsed AI analysis results from the workflow\n// Adjust the index or data source if needed\nconst analysis = items[0].json;\n\n// Build the response object\nreturn [\n  {\n    json: {\n      score: analysis.score || 0,\n      strengths: analysis.strengths || [],\n      improvements: analysis.improvements || [],\n      keywords: analysis.keywords || [],\n      missingKeywords: analysis.missingKeywords || [],\n      concerns: analysis.concerns || [],\n      recommendation: analysis.recommendation || \"\",\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        2272
+      ],
+      "id": "b7477452-bb93-47e9-b9b7-5a2f05d10709",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const candidateRaw = $input.first().json.body;\n\nlet candidate;\ntry {\n  candidate = JSON.parse(candidateRaw);\n} catch (e) {\n  candidate = candidateRaw; // fallback in case it’s already parsed\n}\n\nreturn [{ json: candidate }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        2512
+      ],
+      "id": "70b723d0-2810-4ef6-aee8-96c09d62b4c2",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {
+          "keepSource": "binary"
+        }
+      },
+      "id": "6f1dd490-5c01-4553-a725-d4bd13d8c19f",
+      "name": "Extract from File4",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        -912,
+        2656
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        208,
+        2448
+      ],
+      "id": "d433c37a-b2e4-4b0e-80be-4719b29f89fc",
+      "name": "Merge6"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        800,
+        2432
+      ],
+      "id": "3b2040d6-96e3-4d31-95bc-ce4e506d6037",
+      "name": "Merge7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CV: {{ $json.text }} \nRecruitment Source: {{ $json.recruitmentSource }}\nYou are an AI assistant that analyzes CVs and returns structured data for the candidate. Your task is to evaluate the quality of the candidate's CV based on the content and formatting, considering the candidate's professional title, {{ $json.professionalTitle }}.\nUse the following JSON format for your response:\n{\n  \"num\": [Generate the number between 0 and 999999]\n  \"score\": [a number between 0 and 100 indicating the overall quality and suitability for the {{ $json.professionalTitle }} role],\n  \"strengths\": [a list of strengths from the CV, such as relevant experience, certifications, or skills],\n  \"concerns\": [A list of concerns about the candidate's profile, such as gaps in experience or a lack of certain skills],\n  \"recommendation\": \"A sentence of recommendation for the candidate, considering their professionalTitle, score, and their information (skills, experience, and education).\",\n  \"improvements\": [a list of suggested improvements, such as adding missing keywords or reformatting sections],\n  \"keywords\": [important keywords relevant to the professional title found in the CV],\n  \"missingKeywords\": [important keywords expected for the professional title that are missing from the CV]\n}\n\nContext:\n- The input provided is the raw extracted text from a CV.\n- The candidate’s professional title is {{ $json.professionalTitle }}. Use this to determine which keywords should ideally appear.\n- Score breakdown: 40% content relevance, 30% formatting/structure, 30% keyword presence.\n- The candidate's name is from the CV.\n- The candidate's total experience is {{ $json.experience }} years.\n- The candidate's job preferences include a salary range of ${{ $json.jobPreferences.salary.min }} to ${{ $json.jobPreferences.salary.max }}, preferred locations: {{ $json.jobPreferences.location }}, and job type: {{ $json.jobPreferences.jobType }}.\n- Specific work experience, skills, Certification, and Education details can be found in the CV ({{ $json.text }}).",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -400,
+        1664
+      ],
+      "id": "581264f8-bbbd-48f3-96a6-bd7ad4ca1d03",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-20b",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        1984
+      ],
+      "id": "f9e654a0-9c37-4fe4-bca1-0ebb3822cf73",
+      "name": "LM Studio"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CV: {{ $json.text }} \n\nYou are an AI assistant that analyzes CVs and returns structured data for the candidate. Your task is to evaluate the quality of the candidate's CV based on the content and formatting, considering the candidate's professional title, {{ $json.professionalTitle }}.\nUse the following JSON format for your response:\n{\n  \"score\": [a number between 0 and 100 indicating the overall quality and suitability for the {{ $json.professionalTitle }} role],\n  \"strengths\": [a list of strengths from the CV, such as relevant experience, certifications, or skills],\n  \"concerns\": [A list of concerns about the candidate's profile, such as gaps in experience or a lack of certain skills],\n  \"recommendation\": \"A sentence of recommendation for the candidate, considering their professionalTitle, score, and their information (skills, experience, and education).\",\n  \"improvements\": [a list of suggested improvements, such as adding missing keywords or reformatting sections],\n  \"keywords\": [important keywords relevant to the professional title found in the CV],\n  \"missingKeywords\": [important keywords expected for the professional title that are missing from the CV]\n}\n\nContext:\n- The input provided is the raw extracted text from a CV.\n- The candidate’s professional title is {{ $json.professionalTitle }}. Use this to determine which keywords should ideally appear.\n- Score breakdown: 40% content relevance, 30% formatting/structure, 30% keyword presence.\n- The candidate's name is from the CV.\n- Specific work experience, skills, Certification, and Education details can be found in the CV.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -400,
+        2272
+      ],
+      "id": "7d78c302-3d45-4229-8ac5-34cb95d7f892",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/CV - {{ $json.name}} ({{ $json.number }}).pdf",
+        "binaryData": true,
+        "binaryPropertyName": "file"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        480,
+        2368
+      ],
+      "id": "79fcb577-c9ad-4125-9983-dfb6b99f2429",
+      "name": "Upload a file1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "95ecb247-e493-43cb-ae25-8e01f989cef7",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        1424
+      ],
+      "id": "62434250-405a-4e6d-88d4-84d45a72cfde",
+      "name": "Upload",
+      "webhookId": "95ecb247-e493-43cb-ae25-8e01f989cef7"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "609a04b9-2451-43d7-b631-c2fe3e3fe80b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        2320
+      ],
+      "id": "b78c7031-0c20-4441-8e65-15e9148bbd66",
+      "name": "Overwrite",
+      "webhookId": "609a04b9-2451-43d7-b631-c2fe3e3fe80b"
     }
   ],
   "pinData": {},
@@ -298,22 +506,11 @@
         ]
       ]
     },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "CV Analysis Candidate",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Merge1": {
       "main": [
         [
           {
-            "node": "CV Analysis Candidate",
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
@@ -330,27 +527,6 @@
           },
           {
             "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "Extract from File",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Code7",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Extract from File3",
             "type": "main",
             "index": 0
           }
@@ -412,17 +588,6 @@
         ]
       ]
     },
-    "CV Analysis Candidate": {
-      "main": [
-        [
-          {
-            "node": "Code1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Code7": {
       "main": [
         [
@@ -476,17 +641,223 @@
           }
         ]
       ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract from File4": {
+      "main": [
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Upload a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge7": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LM Studio": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file1": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overwrite": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from File4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "availableInMCP": false
   },
-  "versionId": "ed272a6a-23c1-4710-ac4e-d4a5e15e8563",
+  "versionId": "d7f27972-982a-4a85-bf13-5afee730e40d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5f7ebab91ed6bd3986d3ceb74b98b9b3ce0fc89ca7d29d15ecf7ef5b3eb6538c"
   },
-  "id": "M6wp1QcLiYifEnN9",
+  "id": "qX4BgC7oyjhATgyY",
   "tags": []
 }
